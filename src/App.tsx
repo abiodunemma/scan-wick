@@ -1,121 +1,136 @@
+
 import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
 import './App.css'
 
+type Borrower = {
+  id: number
+  name: string
+  amount: number
+  repaymentDate: string
+  risk: 'Low' | 'Medium' | 'High'
+}
+
+const sampleBorrowers: Borrower[] = [
+  {
+    id: 1,
+    name: 'Jane Doe',
+    amount: 150000,
+    repaymentDate: '2026-10-20',
+    risk: 'Low',
+  },
+  {
+    id: 2,
+    name: 'John Smith',
+    amount: 350000,
+    repaymentDate: '2026-10-15',
+    risk: 'High',
+  },
+  {
+    id: 3,
+    name: 'Mary James',
+    amount: 220000,
+    repaymentDate: '2026-10-25',
+    risk: 'Medium',
+  },
+]
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [borrowers] = useState<Borrower[]>(sampleBorrowers)
+  const [search, setSearch] = useState('')
+  const [riskFilter, setRiskFilter] = useState('All')
+
+  const filteredBorrowers = borrowers.filter((borrower) => {
+    const matchesSearch = borrower.name
+      .toLowerCase()
+      .includes(search.toLowerCase())
+
+    const matchesRisk =
+      riskFilter === 'All' || borrower.risk === riskFilter
+
+    return matchesSearch && matchesRisk
+  })
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
+    <main className="dashboard">
+      <header className="dashboard-header">
         <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
+          <h1>Borrower Monitoring</h1>
+          <p>Monitor borrower repayment information.</p>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+
+        <span className="borrower-count">
+          {filteredBorrowers.length} borrowers
+        </span>
+      </header>
+
+      <section className="toolbar">
+        <input
+          type="search"
+          placeholder="Search borrowers by name..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          aria-label="Search borrowers by name"
+        />
+
+        <select
+          value={riskFilter}
+          onChange={(event) => setRiskFilter(event.target.value)}
+          aria-label="Filter borrowers by risk"
         >
-          Count is {count}
-        </button>
+          <option value="All">All risk levels</option>
+          <option value="Low">Low risk</option>
+          <option value="Medium">Medium risk</option>
+          <option value="High">High risk</option>
+        </select>
       </section>
 
-      <div className="ticks"></div>
+      <div className="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Borrower</th>
+              <th>Loan Amount</th>
+              <th>Repayment Date</th>
+              <th>Risk Signal</th>
+            </tr>
+          </thead>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          <tbody>
+            {filteredBorrowers.length > 0 ? (
+              filteredBorrowers.map((borrower) => (
+                <tr key={borrower.id}>
+                  <td className="borrower-name">{borrower.name}</td>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+                  <td>
+                    {borrower.amount.toLocaleString('en-NG', {
+                      style: 'currency',
+                      currency: 'NGN',
+                      maximumFractionDigits: 0,
+                    })}
+                  </td>
+
+                  <td>{borrower.repaymentDate}</td>
+
+                  <td>
+                    <span
+                      className={`risk risk-${borrower.risk.toLowerCase()}`}
+                    >
+                      {borrower.risk}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={4} className="empty-state">
+                  No borrowers found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </main>
   )
 }
 
